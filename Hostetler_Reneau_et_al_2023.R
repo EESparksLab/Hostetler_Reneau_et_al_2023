@@ -11,11 +11,11 @@ library(tidyverse)
 library("cowplot")
 
 #Root torsional stiffness measurements are reproducible across testing positions and time of day####
-##Repeatability of Measurements #####
+##Repeat testing #####
 cat("\014")
 rm(list=ls()) 
 ls() 
-setwd(dir = "/Users/ashleyhostetler/Desktop/Hostetler_Reneau_et_al_2023/R Input Files/")
+setwd(dir = "/Users/ashleyhostetler/Desktop/SMURF/Data/")
 data0 = read.csv("Database of SMURF Data - 2021_RepeatTestingData.csv", header = TRUE, na.strings = "NA")
 data0 = subset(data0, Experiment == "Repeat Testing 2") 
 data = subset(data0, angle_deg == "6")
@@ -29,25 +29,29 @@ Fig2A = ggplot(data=data,aes(x=Test_Type, y=Torsional_Stiffness_Nm.rad, color=Ad
   ylab("Torsional Stiffnesss (Nm/rad)")+
   labs(color = "Test Position")+
   scale_color_manual(values=c("lightsalmon3","mistyrose3","slategrey"))+
-  theme(#legend.position = "none",
-    #axis.text.x = element_blank(),
-    axis.text.x = element_text(size=12), 
-    axis.text.y = element_text(size=12), 
-    plot.title=element_text(size=12, vjust=3), 
-    axis.text=element_text(size=12), 
-    axis.title = element_text(size=12), 
-    axis.title.y= element_text(vjust=2.5), 
-    axis.title.x= element_text(vjust=-1.4), 
-    axis.ticks.length = unit(.2,"cm"),
-    strip.background = element_rect(fill="grey"),
-    strip.text.x = element_text(size = 12, colour = "black"),
-    strip.text.y = element_text(size = 12, colour = "black"))+
+  theme(legend.position = "none",
+        #axis.text.x = element_blank(),
+        axis.text.x = element_text(size=12), 
+        axis.text.y = element_text(size=12), 
+        plot.title=element_text(size=12, vjust=3), 
+        axis.text=element_text(size=12), 
+        axis.title = element_text(size=12), 
+        axis.title.y= element_text(vjust=2.5), 
+        axis.title.x= element_text(vjust=-1.4), 
+        axis.ticks.length = unit(.2,"cm"),
+        strip.background = element_rect(fill="grey"),
+        strip.text.x = element_text(size = 12, colour = "black"),
+        strip.text.y = element_text(size = 12, colour = "black"))+
   facet_grid(~ID)
 Fig2A
+
+head(data0)
 data0$ID = paste(data0$Plot, data0$Replicate, sep="_")
 data0$angle_rad = (data0$angle_deg)*(pi/180)
+head(data0)
 d1 = subset(data0, Additional_Notes == "TEST2")
 d1 = subset(d1, Test_Type != "D")
+
 FigS1 = ggplot(d1, aes(x=angle_rad, y=Torque_Nm, color=Test_Type)) +
   geom_point()+
   xlab("Angle (radian)") + 
@@ -68,6 +72,7 @@ FigS1 = ggplot(d1, aes(x=angle_rad, y=Torque_Nm, color=Test_Type)) +
   geom_smooth(method = lm, se=F)+
   facet_grid(~ID)
 FigS1
+
 ##Stats
 attach(data)
 lm_x <- lm(Torsional_Stiffness_Nm.rad ~ Additional_Notes*Test_Type)
@@ -84,6 +89,7 @@ resid = residuals(object = lm_x_aov)
 shapiro.test(x=resid)
 leveneTest(Torsional_Stiffness_Nm.rad ~ Additional_Notes*Test_Type)
 detach(data)
+
 ##Time of Day Testing######
 data0 = read.csv("SMURF_StatsReady.csv", header = TRUE, na.strings = "NA")
 data = subset(data0, Experiment == "Time_of_Day")
@@ -93,39 +99,72 @@ data$Genotype = factor(data$Genotype,levels = c("CML258","B73","W22"))
 ###Figure
 data$DAP = as.character(data$DAP)
 data$DAP = factor(data$DAP, levels = c("60","85","101"))
-Fig2B =ggplot(data=data,aes(x=Additional_Notes, y=Torsional_Stiffness_Nm.rad, fill=Year, color=DAP))+
+head(data)
+data1 = subset(data, Year == "2021")
+data1 = subset(data, Genotype != "CML258")
+Fig2B =ggplot(data=data1,aes(x=Additional_Notes, y=Torsional_Stiffness_Nm.rad, color=Year))+
   geom_boxplot(size = 0.25, color="black") + 
   geom_point(size=1,position=position_jitterdodge())+
   xlab("Time of Testing") + 
   ylab("Torsional Stiffnesss (Nm/rad)")+
   labs(color = "Days after Planting")+
-  scale_color_manual(values=c("lightsalmon3","mistyrose3","slategrey"))+
   scale_fill_manual(values=c("white","gray"))+
-  theme(#legend.position = "none",
-    #axis.text.x = element_blank(),
-    axis.text.x = element_text(size=12,  angle = 90), 
-    axis.text.y = element_text(size=12), 
-    plot.title=element_text(size=12, vjust=3), 
-    axis.text=element_text(size=12), 
-    axis.title = element_text(size=12), 
-    axis.title.y= element_text(vjust=2.5), 
-    axis.title.x= element_text(vjust=-1.4), 
-    axis.ticks.length = unit(.2,"cm"),
-    strip.background = element_rect(fill="grey"),
-    strip.text.x = element_text(size = 12, colour = "black"),
-    strip.text.y = element_text(size = 12, colour = "black"))+
-  facet_wrap(~Genotype)
+  scale_color_manual(values=c("lightsalmon3"))+
+  theme(legend.position = "none",
+        #axis.text.x = element_blank(),
+        axis.text.x = element_text(size=12,  angle = 90), 
+        axis.text.y = element_text(size=12), 
+        plot.title=element_text(size=12, vjust=3), 
+        axis.text=element_text(size=12), 
+        axis.title = element_text(size=12), 
+        axis.title.y= element_text(vjust=2.5), 
+        axis.title.x= element_text(vjust=-1.4), 
+        axis.ticks.length = unit(.2,"cm"),
+        strip.background = element_rect(fill="grey"),
+        strip.text.x = element_text(size = 12, colour = "black"),
+        strip.text.y = element_text(size = 12, colour = "black"))+
+  facet_grid(~Genotype)
 Fig2B
+
+data1 = subset(data, Genotype == "CML258")
+Fig2C =ggplot(data=data1,aes(x=Additional_Notes, y=Torsional_Stiffness_Nm.rad, color=Year))+
+  geom_boxplot(size = 0.25, color="black") + 
+  geom_point(size=1,position=position_jitterdodge())+
+  xlab("Time of Testing") + 
+  ylab("Torsional Stiffnesss (Nm/rad)")+
+  labs(color = "Days after Planting")+
+  scale_fill_manual(values=c("white","gray"))+
+  scale_color_manual(values=c("lightsalmon3","slategrey"))+
+  theme(legend.position = "none",
+        #axis.text.x = element_blank(),
+        axis.text.x = element_text(size=12,  angle = 90), 
+        axis.text.y = element_text(size=12), 
+        plot.title=element_text(size=12, vjust=3), 
+        axis.text=element_text(size=12), 
+        axis.title = element_text(size=12), 
+        axis.title.y= element_text(vjust=2.5), 
+        axis.title.x= element_text(vjust=-1.4), 
+        axis.ticks.length = unit(.2,"cm"),
+        strip.background = element_rect(fill="grey"),
+        strip.text.x = element_text(size = 12, colour = "black"),
+        strip.text.y = element_text(size = 12, colour = "black"))+
+  facet_grid(~Year)
+Fig2C
+
+
 ggdraw() +
-  draw_plot(Fig2A, x = 0, y = 0, width = .4, height = 1) +
-  draw_plot(Fig2B, x = 0.4, y = 0, width = .6, height = 1) +
-  draw_plot_label(label = c("A", "B"), 
-                  size = 15,
-                  x = c(0, 0.4), 
-                  y = c(1, 1))
+  draw_plot(Fig2A, x = 0, y = 0, width = .33, height = 1) +
+  draw_plot(Fig2B, x = 0.33, y = 0, width = .33, height = 1) +
+  draw_plot(Fig2C, x = 0.66, y = 0, width = .33, height = 1) +
+  draw_plot_label(label = c("A", "B", "C"), 
+                  size = 12,
+                  x = c(0, 0.33,0.66), 
+                  y = c(1, 1,1))
 ###Stats
-#Does Genotype, Year, or Time of Day impact RTS
-data1 = subset(data, Genotype == "B73" | Genotype == "W22")
+#Does Genotype or Time of Day impact RTS
+head(data)
+data1 = subset(data, Year == "2021")
+data1 = subset(data, Genotype != "CML258")
 attach(data1)
 lm_x <- lm(Torsional_Stiffness_Nm.rad ~ Genotype*Additional_Notes)
 anova(lm_x)
@@ -161,13 +200,30 @@ HSD.test(lm_x2_aov2, trt = c("Genotype"), console = TRUE)
 data1$tukey = NULL
 detach(data1)
 
+#Does Time of Day impact RTS
+data1 = subset(data, Year == "2021")
 data1 = subset(data, Genotype == "CML258")
-#Does Genotype, Year, or Time of Day impact RTS
 attach(data1)
-lm_x <- lm(Torsional_Stiffness_Nm.rad ~ Additional_Notes*DAP)
+lm_x <- lm(Torsional_Stiffness_Nm.rad ~ Additional_Notes)
 anova(lm_x)
 lm_x_aov=aov(lm_x) 
-HSD.test(lm_x_aov, trt = c("Additional_Notes", "DAP"), console = TRUE)
+HSD.test(lm_x_aov, trt = c("Additional_Notes"), console = TRUE)
+par(mfrow=c(2,2))
+plot(lm_x)
+par(mfrow=c(2,1))
+plot(data1$Torsional_Stiffness_Nm.rad)
+hist(data1$Torsional_Stiffness_Nm.rad)
+resid = residuals(object = lm_x_aov)
+shapiro.test(x=resid)
+detach(data1)
+
+#Does Time of Day impact RTS
+data1 = subset(data, Year == "2022")
+attach(data1)
+lm_x <- lm(Torsional_Stiffness_Nm.rad ~ Additional_Notes)
+anova(lm_x)
+lm_x_aov=aov(lm_x) 
+HSD.test(lm_x_aov, trt = c("Additional_Notes"), console = TRUE)
 par(mfrow=c(2,2))
 plot(lm_x)
 par(mfrow=c(2,1))
@@ -887,95 +943,3 @@ ggdraw() +
                   size = 15,
                   x = c(0, 0), 
                   y = c(0.5, 1))
-
-#Supplemental Figure: Maize hybrids had similar root lodging susceptibility profiles at two field locations (Figure S3)####
-##2018####
-cat("\014")
-rm(list=ls()) 
-ls() 
-setwd(dir = "/Users/ashleyhostetler/Desktop/Hostetler_Reneau_et_al_2023/R Input Files/")
-data = read.csv("UAVHeight_2018.csv", header = TRUE, na.strings = "NA")
-data$lod = ((data$X7022018 - data$X6282018)/data$X6282018)*100
-data$lod = as.numeric(data$lod)
-data=data %>% drop_na(lod)
-data$lod_cat = data$lod
-data$lod_cat = as.numeric(data$lod_cat)
-for (i in 1:length(data$lod_cat)){
-  if (data$lod[i] > -10) {
-    data$lod_cat[i] = "NHC"
-  } else if (data$lod[i] < -50) {
-    data$lod_cat[i] = "SHC"
-  } else if (data$lod[i] > -50) {
-    data$lod_cat[i] = "MHC"
-  }
-}
-data = data[,c(1:5,9,10,20,21)]
-data = subset(data, GENOTYPE == "PHB47 x LH198" | GENOTYPE == "PHB47 x PHP02" | GENOTYPE =="LH82 x DK3IIH6" | GENOTYPE =="PHK56 x PHK76" | GENOTYPE =="PHK76 x PHP02" | GENOTYPE =="LH145 x DK3IIH6" | GENOTYPE =="DK3IIH6 x LH198" | GENOTYPE =="LH198 x PHN46" | GENOTYPE =="LH82 x PHK76" | GENOTYPE =="LH82 x PHP02" | GENOTYPE =="LH82 x LH145")
-data$SEEDSPERROW = factor(data$SEEDSPERROW,levels = c("23","35","46"))
-data$GENOTYPE = factor(data$GENOTYPE,levels = c("PHB47 x LH198","PHB47 x PHP02","LH82 x DK3IIH6","PHK56 x PHK76","PHK76 x PHP02","LH145 x DK3IIH6","DK3IIH6 x LH198","LH198 x PHN46","LH82 x PHK76","LH82 x PHP02","LH82 x LH145"))
-data$lod_cat = factor(data$lod_cat,levels = c("NHC","MHC","SHC"))
-data2 = read.csv("/Users/ashleyhostetler/Desktop/Hostetler_Reneau_et_al_2023/R Input Files/LodgingCategories.csv", header = TRUE, na.strings = "NA")
-data2$GENOTYPE = data2$Genotype
-data2 = data2[,c(5,3,4)]
-data = merge(data, data2, by = "GENOTYPE")
-data$PL_cat = factor(data$PL_cat,levels = c("low","mid","high"))
-data$PLANTINGDATE = as.numeric(data$PLANTINGDATE)
-data = subset(data, SEEDSPERROW == "23")
-FigS3A = ggplot(data, aes(x=PLANTINGDATE, y=lod, color=lod_cat, shape=PL_cat))+
-  geom_point(size=4)+
-  geom_segment(aes(x=PLANTINGDATE, xend=PLANTINGDATE, y=0, yend=lod))+
-  ylab("Percent Change in Height")+
-  xlab("Planting Date")+
-  scale_shape_discrete(name = "Newark, DE Lodging", labels = c("Low Lodging", "Moderate Lodging", "Severe Lodging"))+
-  scale_color_manual(name = "St. Paul, MN Lodging", labels = c("No Lodging", "Moderate Lodging", "Severe Lodging"), values=c("lightsalmon3","mistyrose3","slategrey"))+
-  #scale_fill_manual(values=c("black","gray50","gray100"))+
-  scale_x_continuous(breaks=c(1,2), limits=c(0.5,2.5), expand=c(0,0))+
-  facet_grid(~GENOTYPE)
-FigS3A
-
-##2019####
-data = read.csv("UAVHeight_2019.csv", header = TRUE, na.strings = "NA")
-data$lod = ((data$X7162019 - data$X7152019)/data$X7152019)*100
-data$lod = as.numeric(data$lod)
-data=data %>% drop_na(lod)
-data$lod_cat = data$lod
-data$lod_cat = as.numeric(data$lod_cat)
-for (i in 1:length(data$lod_cat)){
-  if (data$lod[i] > -10) {
-    data$lod_cat[i] = "NHC"
-  } else if (data$lod[i] < -50) {
-    data$lod_cat[i] = "SHC"
-  } else if (data$lod[i] > -50) {
-    data$lod_cat[i] = "MHC"
-  }
-}
-data = data[,c(1:5,19,20,29,30)]
-data = subset(data, GENOTYPE == "PHB47 x LH198" | GENOTYPE == "PHB47 x PHP02" | GENOTYPE =="LH82 x DK3IIH6" | GENOTYPE =="PHK56 x PHK76" | GENOTYPE =="PHK76 x PHP02" | GENOTYPE =="LH145 x DK3IIH6" | GENOTYPE =="DK3IIH6 x LH198" | GENOTYPE =="LH198 x PHN46" | GENOTYPE =="LH82 x PHK76" | GENOTYPE =="LH82 x PHP02" | GENOTYPE =="LH82 x LH145")
-data$SEEDSPERROW = factor(data$SEEDSPERROW,levels = c("23","35","46"))
-data$GENOTYPE = factor(data$GENOTYPE,levels = c("PHB47 x LH198","PHB47 x PHP02","LH82 x DK3IIH6","PHK56 x PHK76","PHK76 x PHP02","LH145 x DK3IIH6","DK3IIH6 x LH198","LH198 x PHN46","LH82 x PHK76","LH82 x PHP02","LH82 x LH145"))
-data$lod_cat = factor(data$lod_cat,levels = c("NHC","MHC","SHC"))
-data2 = read.csv("/Users/ashleyhostetler/Desktop/Hostetler_Reneau_et_al_2023/R Input Files/LodgingCategories.csv", header = TRUE, na.strings = "NA")
-data2$GENOTYPE = data2$Genotype
-data2 = data2[,c(5,3,4)]
-data = merge(data, data2, by = "GENOTYPE")
-data$PL_cat = factor(data$PL_cat,levels = c("low","mid","high"))
-data$PLANTINGDATE = as.numeric(data$PLANTINGDATE)
-data = subset(data, SEEDSPERROW == "23")
-FigS3B = ggplot(data, aes(x=PLANTINGDATE, y=lod, color=lod_cat, shape=PL_cat))+
-  geom_point(size=4)+
-  geom_segment(aes(x=PLANTINGDATE, xend=PLANTINGDATE, y=0, yend=lod))+
-  ylab("Percent Change in Height")+
-  xlab("Planting Date")+
-  scale_shape_discrete(name = "Newark, DE Lodging", labels = c("Low Lodging", "Moderate Lodging", "Severe Lodging"))+
-  scale_color_manual(name = "St. Paul, MN Lodging", labels = c("No Lodging", "Moderate Lodging", "Severe Lodging"), values=c("lightsalmon3","mistyrose3","slategrey"))+
-  #scale_fill_manual(values=c("black","gray50","gray100"))+
-  scale_x_continuous(breaks=c(1,2), limits=c(0.5,2.5), expand=c(0,0))+
-  facet_grid(~GENOTYPE)
-FigS3B
-ggdraw() +
-  draw_plot(FigS3B, x = 0, y = 0, width = 1, height = 0.5) +
-  draw_plot(FigS3A, x = 0, y = 0.5, width = 1, height = 0.5) +
-  draw_plot_label(label = c("A", "B"), 
-                  size = 15,
-                  x = c(0,0), 
-                  y = c(1,0.5))
